@@ -1,67 +1,68 @@
 package com.skypro.homework213mockito.service;
 
 import com.skypro.homework213mockito.model.Employee;
+import com.skypro.homework213mockito.record.EmployeeRequest;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.Collection;
+import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 class EmployeeServiceTest {
     private EmployeeService employeeService;
-    private List<Employee> employeeList;
+
+    @BeforeEach
+    public void setUp() {
+        this.employeeService = new EmployeeService();
+        Stream.of(
+                new EmployeeRequest("Petr", "Ivanov", 2, 50000),
+                new EmployeeRequest("Vasya", "Petrov", 1, 20000),
+                new EmployeeRequest("Sergei", "Sidorov", 3, 40000),
+                new EmployeeRequest("Olya", "Sergeeva", 4, 30000),
+                new EmployeeRequest("Ivan", "Kozlov", 1, 35000),
+                new EmployeeRequest("Misha", "Orlov", 2, 55000)
+        ).forEach(employeeService::addEmployee);
+    }
 
     @Test
     void getAllEmployees() {
-        Employee employee1 = new Employee("Petr", "Ivanov", 2, 50000);
-        Employee employee2 = new Employee("Vasya", "Petrov", 1, 20000);
-        Employee employee3 = new Employee("Sergei", "Sidorov", 3, 40000);
-
-        employeeList = new ArrayList<>(List.of(employee1,
-                employee2, employee3));
-
-        List<Employee> actual = new ArrayList<>();
-        actual.add(employee1);
-        actual.add(employee2);
-        actual.add(employee3);
-
-        assertEquals(employeeList, actual);
-
+        Collection<Employee> employees = employeeService.getAllEmployees();
+        assertThat(employees).hasSize(6);
+        assertThat(employees).first().extracting(Employee::getFirstName)
+                .isEqualTo("Petr");
     }
 
     @Test
     void addEmployee() {
+        EmployeeRequest request = new EmployeeRequest("Test", "Test", 2, 20000);
+        Employee result = employeeService.addEmployee(request);
+        assertEquals(request.getFirstName(), result.getFirstName());
+        assertEquals(request.getLastName(), result.getLastName());
+        assertEquals(request.getDepartment(), result.getDepartment());
+        assertEquals(request.getSalary(), result.getSalary());
+        assertThat(employeeService.getAllEmployees()).contains(result);
+
     }
 
     @Test
     void getSalarySum() {
-        final int expected = 110000;
-        final int actual = employeeList.stream().mapToInt(Employee::getSalary).sum();
-
-        assertEquals(expected, actual);
+        int sum = employeeService.getSalarySum();
+        assertThat(sum).isEqualTo(230000);
     }
 
     @Test
     void getEmployeeMinSalary() {
-        final Employee actual = employeeList.stream().min(Comparator.comparingInt(Employee::getSalary)).get();
-        final Employee expected = employeeService.getEmployeeMinSalary();
-
-        assertEquals(expected, actual);
-
+        Employee actual = employeeService.getEmployeeMinSalary();
+        assertThat(actual).isNotNull().extracting(Employee::getFirstName).isEqualTo("Vasya");
     }
 
     @Test
     void getEmployeeMaxSalary() {
-        final Employee actual = employeeList.stream().max(Comparator.comparingInt(Employee::getSalary)).get();
-        final Employee expected = employeeService.getEmployeeMaxSalary();
-
-        assertEquals(expected, actual);
-
-    }
-
-    @Test
-    void getEmployeesMoreSalary() {
+        Employee actual = employeeService.getEmployeeMaxSalary();
+        assertThat(actual).isNotNull().extracting(Employee::getFirstName).isEqualTo("Misha");
     }
 }

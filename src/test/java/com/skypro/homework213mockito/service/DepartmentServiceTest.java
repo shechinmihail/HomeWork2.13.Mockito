@@ -10,10 +10,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 
 import static org.mockito.Mockito.when;
-import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -46,33 +48,43 @@ class DepartmentServiceTest {
 
     @Test // getEmployeesFromDepartment
     public void shouldReturnEmployeesFromDepartment() {
+        final int department = 2;
+        final Map<Integer, List<Employee>> actual = (Map<Integer, List<Employee>>) employeeList.stream().filter(e -> e.getDepartment() == department)
+                .collect(Collectors.toList());
+        final Map<Integer, List<Employee>> expected = (Map<Integer, List<Employee>>) departmentService.getEmployeesFromDepartment(2);
 
+        assertEquals(expected, actual);
 
     }
 
     @Test // getSalaryOfDepartment
     public void shouldReturnSumSalaryOfDepartment() {
+        assertEquals(105000, departmentService.getSalaryOfDepartment(2));
     }
 
     @Test // getMaxSalaryOfDepartment
     public void shouldReturnMaxSalaryOfDepartment() {
-        employeeService.getAllEmployees();
-        assertEquals(20000, departmentService.getMaxSalaryOfDepartment(3));
+        assertEquals(47000, departmentService.getMaxSalaryOfDepartment(3));
     }
 
     @Test // getMinSalaryOfDepartment
     public void shouldReturnMinSalaryOfDepartment() {
         final int department = 1;
-
-        final int now = employeeList.stream().filter(e->e.getDepartment() == department)
+        final int actual = employeeList.stream().filter(e -> e.getDepartment() == department)
                 .mapToInt(Employee::getSalary).min().orElse(0);
-        final int shouldBe = departmentService.getMinSalaryOfDepartment(department);
+        final int expected = departmentService.getMinSalaryOfDepartment(department);
 
-        assertEquals(shouldBe, now);
+        assertEquals(expected, actual);
     }
 
     @Test // employeesGroupedByDepartment
     public void shouldReturnEmployeesGroupedByDepartment() {
+        final Map<Integer, List<Employee>> actual = employeeList.stream().map(Employee::getDepartment)
+                .collect(Collectors.toSet()).stream()
+                .collect(Collectors.toMap(deport -> deport, deport -> employeeList.stream().filter(e -> e.getDepartment() == deport)
+                        .collect(Collectors.toList())));
+        final Map<Integer, List<Employee>> expected = departmentService.employeesGroupedByDepartment();
 
+        assertEquals(expected, actual);
     }
 }
