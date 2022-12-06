@@ -9,11 +9,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -48,13 +50,11 @@ class DepartmentServiceTest {
 
     @Test // getEmployeesFromDepartment
     public void shouldReturnEmployeesFromDepartment() {
-        final int department = 2;
-        final Map<Integer, List<Employee>> actual = (Map<Integer, List<Employee>>) employeeList.stream().filter(e -> e.getDepartment() == department)
-                .collect(Collectors.toList());
-        final Map<Integer, List<Employee>> expected = (Map<Integer, List<Employee>>) departmentService.getEmployeesFromDepartment(2);
-
-        assertEquals(expected, actual);
-
+        Collection<Employee> employees = this.departmentService.getEmployeesFromDepartment(2);
+        assertThat(employees).hasSize(2)
+                .contains(
+                        employeeList.get(0),
+                        employeeList.get(5));
     }
 
     @Test // getSalaryOfDepartment
